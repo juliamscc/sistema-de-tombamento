@@ -1,25 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import RegisterProduct from './pages/RegisterProduct';
+import ConsultProducts from './pages/ConsultProducts';
+import ArchivedProducts from './pages/ArchivedProducts';
+import ManageUsers from './pages/ManageUsers';
+import { useAuth, AuthProvider } from './hooks/useAuth';
 
 function App() {
+  const { user } = useAuth();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        {/* Rotas de acesso público */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Rotas protegidas por autenticação */}
+        {user ? (
+          <>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/register-product" element={<RegisterProduct />} />
+            <Route path="/consult-products" element={<ConsultProducts />} />
+            <Route path="/archived-products" element={<ArchivedProducts />} />
+            {user.role === 'manager' && (
+              <Route path="/manage-users" element={<ManageUsers />} />
+            )}
+          </>
+        ) : (
+          // Redireciona para login se não logado
+          <Route path="*" element={<Navigate to="/login" />} />
+        )}
+      </Routes>
+    </Router>
   );
 }
 
-export default App;
+// Envolvendo o App com AuthProvider
+const RootApp = () => (
+  <AuthProvider>
+    <App />
+  </AuthProvider>
+);
+
+export default RootApp;
